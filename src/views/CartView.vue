@@ -4,32 +4,21 @@ import 'swiper/css'
 import Footer from '@/components/Footer.vue'
 import Navbar from '@/components/Navbar.vue'
 
-import { apiDeleteCartItem, apiGetCart, apiUpdateCartItem } from '@/api/cart'
 import { apiApplyCoupon } from '@/api/order'
 import { apiGetProducts } from '@/api/products'
+import { useCartStore } from '@/stores/cartStore'
 import type { CartInfo } from '@/types/cart'
 import type { Product } from '@/types/product'
+import { storeToRefs } from 'pinia'
 import Swiper from 'swiper'
 import { Autoplay } from 'swiper/modules'
 import { onMounted, ref } from 'vue'
 
-const cart = ref<CartInfo>({
-  carts: [],
-  total: 0,
-  final_total: 0,
-})
+const cartStore = useCartStore()
 
-const getCart = async () => {
-  try {
-    const res = await apiGetCart()
-    cart.value = res.data.data
-  } catch (error) {
-    alert('取得購物車失敗')
-  }
-}
+const { cart, isUpdating, isDeleting } = storeToRefs(cartStore)
 
 onMounted(() => {
-  getCart()
   getProducts()
 })
 
@@ -69,8 +58,6 @@ const products = ref<Product[]>([])
 
 type CartItem = CartInfo['carts'][number]
 
-const isUpdating = ref(false)
-
 const handleUpdateCartItem = async (type: 'plus' | 'minus', cartItem: CartItem) => {
   let cartItemNum = cartItem.qty
   if (type === 'plus') {
@@ -78,35 +65,16 @@ const handleUpdateCartItem = async (type: 'plus' | 'minus', cartItem: CartItem) 
   } else {
     cartItemNum--
   }
-  try {
-    isUpdating.value = true
 
-    await apiUpdateCartItem({
-      id: cartItem.id,
-      product_id: cartItem.product.id,
-      qty: cartItemNum,
-    })
-    await getCart()
-  } catch (error) {
-    alert('更新購物車失敗')
-  } finally {
-    isUpdating.value = false
-  }
+  cartStore.updataCartItem({
+    id: cartItem.id,
+    product_id: cartItem.product.id,
+    qty: cartItemNum,
+  })
 }
 
-const isDeleting = ref(false)
-
 const handleDeleteCartItem = async (cartId: string) => {
-  try {
-    isDeleting.value = true
-
-    await apiDeleteCartItem(cartId)
-    await getCart()
-  } catch (error) {
-    alert('刪除購物車項目失敗')
-  } finally {
-    isDeleting.value = false
-  }
+  cartStore.deleteCartItem(cartId)
 }
 
 const couponCode = ref('')

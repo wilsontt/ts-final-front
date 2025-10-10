@@ -11,13 +11,15 @@ import { Autoplay } from 'swiper/modules'
 import Footer from '@/components/Footer.vue'
 import Navbar from '@/components/Navbar.vue'
 
-import { apiAddCartItem, apiGetCart } from '@/api/cart'
 import { apiGetProductDetail, apiGetProducts } from '@/api/products'
+import { useCartStore } from '@/stores/cartStore'
 import type { Product } from '@/types/product'
 
 const productNum = ref(1)
 
 const route = useRoute()
+
+const cartStore = useCartStore()
 
 const productId = computed(() => route.params.id as string)
 
@@ -97,15 +99,10 @@ onMounted(() => {
 })
 
 const handleAddCartItem = async () => {
-  try {
-    await apiAddCartItem({
-      product_id: productId.value,
-      qty: productNum.value,
-    })
-    await apiGetCart()
-  } catch (error) {
-    alert('加入購物車失敗')
-  }
+  cartStore.addCartItem({
+    product_id: productId.value,
+    qty: productNum.value,
+  })
 }
 </script>
 

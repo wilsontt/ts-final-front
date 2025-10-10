@@ -1,34 +1,19 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, ref } from 'vue'
 
-import { apiGetCart } from '@/api/cart'
 import { apiCreateOrder, apiProcessPayment } from '@/api/order'
 import Navbar from '@/components/Navbar.vue'
-import type { CartInfo } from '@/types/cart'
+import { useCartStore } from '@/stores/cartStore'
+import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
 const step = ref<1 | 2>(1)
 
-const cart = ref<CartInfo>({
-  carts: [],
-  total: 0,
-  final_total: 0,
-})
+const cartStore = useCartStore()
 
-const getCart = async () => {
-  try {
-    const res = await apiGetCart()
-    cart.value = res.data.data
-  } catch (error) {
-    alert('取得購物車失敗')
-  }
-}
-
-onMounted(() => {
-  getCart()
-})
+const { cart } = storeToRefs(cartStore)
 
 const orderId = ref<string | null>(null)
 

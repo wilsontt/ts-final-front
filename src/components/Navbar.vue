@@ -1,25 +1,14 @@
 <script setup lang="ts">
-import { apiGetCart } from '@/api/cart'
-import type { CartInfo } from '@/types/cart'
-import { onMounted, ref } from 'vue'
+import { useCartStore } from '@/stores/cartStore'
+import { storeToRefs } from 'pinia'
+import { onMounted } from 'vue'
 
-const cart = ref<CartInfo>({
-  carts: [],
-  total: 0,
-  final_total: 0,
-})
+const cartStore = useCartStore()
 
-const getCart = async () => {
-  try {
-    const res = await apiGetCart()
-    cart.value = res.data.data
-  } catch (error) {
-    alert('取得購物車失敗')
-  }
-}
+const { cart } = storeToRefs(cartStore)
 
 onMounted(() => {
-  getCart()
+  cartStore.getCart()
 })
 </script>
 
