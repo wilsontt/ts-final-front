@@ -1,13 +1,9 @@
-import { useQuery } from '@tanstack/vue-query'
-import axios from 'axios'
-import type { ComputedRef, Ref } from 'vue'
 import type {
   GetAllProductsResponse,
-  GetProductDetailParams,
   GetProductDetailResponse,
-  GetProductsParams,
   GetProductsResponse,
-} from './types'
+} from '@/types/product'
+import axios, { type AxiosResponse } from 'axios'
 
 const BASE_URL = import.meta.env.VITE_BASE_URL
 const API_PATH = import.meta.env.VITE_API_PATH
@@ -34,52 +30,14 @@ productApi.interceptors.response.use(
   },
 )
 
-const getProducts = async (params: GetProductsParams): Promise<GetProductsResponse> => {
-  const res = await productApi.get<GetProductsResponse>(`/v2/api/${API_PATH}/products`, { params })
-
-  return res.data
-}
-
-const getAllProducts = async (): Promise<GetAllProductsResponse['products']> => {
-  const res = await productApi.get<GetAllProductsResponse>(`/v2/api/${API_PATH}/products/all`)
-
-  return res.data.products
-}
-
-const getProductDetail = async (
-  params: GetProductDetailParams,
-): Promise<GetProductDetailResponse> => {
-  const res = await productApi.get<{ product: GetProductDetailResponse }>(
-    `/v2/api/${API_PATH}/product/${params.id}`,
-  )
-
-  return res.data.product
-}
-
 export const apiGetProducts = (params?: {
-  page?: Ref<GetProductsParams['page']>
-  category?: Ref<GetProductsParams['category']>
-}) =>
-  useQuery<GetProductsResponse, Error>({
-    queryKey: [params?.page, params?.category],
-    queryFn: () =>
-      getProducts({
-        category: params?.category?.value,
-        page: params?.page?.value,
-      }),
-  })
+  page?: string
+  category?: string
+}): Promise<AxiosResponse<GetProductsResponse>> =>
+  productApi.get(`/v2/api/${API_PATH}/products`, { params })
 
-export const apiGetAllProducts = () =>
-  useQuery<GetAllProductsResponse['products'], Error>({
-    queryKey: ['productsAll'],
-    queryFn: getAllProducts,
-  })
+export const apiGetAllProducts = (): Promise<AxiosResponse<GetAllProductsResponse>> =>
+  productApi.get(`/v2/api/${API_PATH}/products/all`)
 
-export const apiGetProductDetail = (productId: ComputedRef<GetProductDetailParams['id']>) =>
-  useQuery<GetProductDetailResponse, Error>({
-    queryKey: [productId],
-    queryFn: () =>
-      getProductDetail({
-        id: productId.value,
-      }),
-  })
+export const apiGetProductDetail = (id: string): Promise<AxiosResponse<GetProductDetailResponse>> =>
+  productApi.get(`/v2/api/${API_PATH}/product/${id}`)

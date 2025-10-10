@@ -13,6 +13,7 @@ import Navbar from '@/components/Navbar.vue'
 
 import { apiAddCartItem, apiGetCart } from '@/api/cart'
 import { apiGetProductDetail, apiGetProducts } from '@/api/products'
+import type { Product } from '@/types/product'
 
 const productNum = ref(1)
 
@@ -20,7 +21,36 @@ const route = useRoute()
 
 const productId = computed(() => route.params.id as string)
 
-const { data: product } = apiGetProductDetail(productId)
+const product = ref<Product>({
+  category: '',
+  content: '',
+  description: '',
+  id: '',
+  imageUrl: '',
+  imagesUrl: [],
+  is_enabled: 0,
+  num: 0,
+  origin_price: 0,
+  price: 0,
+  title: '',
+  unit: '',
+})
+
+const recommend = ref<Product[]>([])
+
+const getProductDetail = async () => {
+  try {
+    const res = await apiGetProductDetail(productId.value)
+    product.value = res.data.product
+  } catch (error) {
+    alert('取得產品資訊失敗')
+  }
+}
+
+onMounted(() => {
+  getProductDetail()
+  getProducts()
+})
 
 const recommendCategory = computed(() => {
   if (!product.value) return ''
@@ -28,14 +58,19 @@ const recommendCategory = computed(() => {
   return product.value.category
 })
 
-const { data: recommend } = apiGetProducts({
-  category: recommendCategory,
-})
+const getProducts = async () => {
+  try {
+    const res = await apiGetProducts({ category: recommendCategory.value })
+    recommend.value = res.data.products
+  } catch (error) {
+    alert('取得產品列表失敗')
+  }
+}
 
 const recommendProducts = computed(() => {
   if (!recommend.value) return []
 
-  return recommend.value.products.filter((product) => product.id !== route.params.id)
+  return recommend.value.filter((product) => product.id !== route.params.id)
 })
 
 const swiperContainer = ref<HTMLElement | null>(null)

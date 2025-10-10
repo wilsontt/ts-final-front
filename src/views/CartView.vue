@@ -8,6 +8,7 @@ import { apiDeleteCartItem, apiGetCart, apiUpdateCartItem } from '@/api/cart'
 import { apiApplyCoupon } from '@/api/order'
 import { apiGetProducts } from '@/api/products'
 import type { CartInfo } from '@/types/cart'
+import type { Product } from '@/types/product'
 import Swiper from 'swiper'
 import { Autoplay } from 'swiper/modules'
 import { onMounted, ref } from 'vue'
@@ -29,6 +30,7 @@ const getCart = async () => {
 
 onMounted(() => {
   getCart()
+  getProducts()
 })
 
 const swiperContainer = ref<HTMLElement | null>(null)
@@ -54,7 +56,16 @@ onMounted(() => {
   }
 })
 
-const { data } = apiGetProducts()
+const getProducts = async () => {
+  try {
+    const res = await apiGetProducts()
+    products.value = res.data.products
+  } catch (error) {
+    alert('取得產品列表失敗')
+  }
+}
+
+const products = ref<Product[]>([])
 
 type CartItem = CartInfo['carts'][number]
 
@@ -250,7 +261,7 @@ const handleApplyCoupon = async () => {
         <h3 class="fw-bold">你可能會喜歡的植栽</h3>
         <div ref="swiperContainer" class="swiper mt-4 mb-5">
           <div class="swiper-wrapper">
-            <div v-for="product in data?.products" :key="product.id" class="swiper-slide">
+            <div v-for="product in products" :key="product.id" class="swiper-slide">
               <div class="card border-0 mb-4 position-relative position-relative">
                 <img
                   :src="product.imageUrl"

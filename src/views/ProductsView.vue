@@ -1,20 +1,52 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 
 import Footer from '@/components/Footer.vue'
 import Navbar from '@/components/Navbar.vue'
 
 import { apiGetAllProducts, apiGetProducts } from '@/api/products'
+import type { Pagination, Product } from '@/types/product'
 
 const currentPage = ref('1')
 const selectedCategory = ref('')
 
-const { data } = apiGetProducts({
-  page: currentPage,
-  category: selectedCategory,
+const products = ref<Product[]>([])
+const allProducts = ref<Product[]>([])
+
+const pagination = ref<Pagination>({
+  total_pages: 0,
+  current_page: 0,
+  has_pre: false,
+  has_next: false,
+  category: '',
 })
 
-const { data: allProducts } = apiGetAllProducts()
+const getProducts = async () => {
+  try {
+    const res = await apiGetProducts({
+      page: currentPage.value,
+      category: selectedCategory.value,
+    })
+    products.value = res.data.products
+    pagination.value = res.data.pagination
+  } catch (error) {
+    alert('取得產品列表失敗')
+  }
+}
+
+const getAllProducts = async () => {
+  try {
+    const res = await apiGetAllProducts()
+    allProducts.value = res.data.products
+  } catch (error) {
+    alert('取得所有產品列表失敗')
+  }
+}
+
+onMounted(() => {
+  getProducts()
+  getAllProducts()
+})
 
 const categories = computed(() => {
   if (!allProducts.value) return []
@@ -102,7 +134,7 @@ const categories = computed(() => {
       </div>
       <div class="col-md-8">
         <div class="row">
-          <div v-for="product in data?.products" :key="product.id" class="col-md-6">
+          <div v-for="product in products" :key="product.id" class="col-md-6">
             <div class="card border-0 mb-4 position-relative position-relative">
               <img
                 style="height: 320px"
@@ -136,17 +168,17 @@ const categories = computed(() => {
             <li class="page-item">
               <button
                 @click="currentPage = (parseInt(currentPage) - 1).toString()"
-                :disabled="!data?.pagination?.has_pre"
+                :disabled="!pagination?.has_pre"
                 type="button"
                 class="page-link"
-                :class="{ disabled: !data?.pagination?.has_pre }"
+                :class="{ disabled: !pagination?.has_pre }"
                 aria-label="Previous"
               >
                 <span aria-hidden="true">&laquo;</span>
               </button>
             </li>
             <li
-              v-for="pageNum in data?.pagination?.total_pages"
+              v-for="pageNum in pagination?.total_pages"
               :key="pageNum"
               class="page-item"
               :class="{ active: currentPage === pageNum.toString() }"
@@ -163,9 +195,9 @@ const categories = computed(() => {
             <li class="page-item">
               <button
                 @click="currentPage = (parseInt(currentPage) + 1).toString()"
-                :disabled="!data?.pagination?.has_next"
+                :disabled="!pagination?.has_next"
                 class="page-link"
-                :class="{ disabled: !data?.pagination?.has_next }"
+                :class="{ disabled: !pagination?.has_next }"
                 type="button"
                 aria-label="Next"
               >
