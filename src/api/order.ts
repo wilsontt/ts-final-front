@@ -1,13 +1,10 @@
-import { useMutation, useQueryClient } from '@tanstack/vue-query'
-import axios from 'axios'
+import axios, { type AxiosResponse } from 'axios'
+
 import type {
-  ApplyCouponParams,
   ApplyCouponResponse,
-  CreateOrderParams,
   CreateOrderResponse,
-  ProcessPaymentParams,
   ProcessPaymentResponse,
-} from './types'
+} from '@/types/order'
 
 const BASE_URL = import.meta.env.VITE_BASE_URL
 const API_PATH = import.meta.env.VITE_API_PATH
@@ -33,54 +30,23 @@ orderApi.interceptors.response.use(
     return Promise.reject(error.response.data)
   },
 )
+export const apiCreateOrder = (data: {
+  user: {
+    name: string
+    email: string
+    tel: string
+    address: string
+  }
+  message?: string
+}): Promise<AxiosResponse<CreateOrderResponse>> =>
+  orderApi.post(`/v2/api/${API_PATH}/order`, { data })
 
-const createOrder = async (data: CreateOrderParams): Promise<CreateOrderResponse> => {
-  const res = await orderApi.post<CreateOrderResponse>(`/v2/api/${API_PATH}/order`, { data })
+export const apiProcessPayment = (
+  orderId: string,
+): Promise<AxiosResponse<ProcessPaymentResponse>> =>
+  orderApi.post(`/v2/api/${API_PATH}/pay/${orderId}`)
 
-  return res.data
-}
-
-const processPayment = async (orderId: ProcessPaymentParams): Promise<ProcessPaymentResponse> => {
-  const res = await orderApi.post<ProcessPaymentResponse>(`/v2/api/${API_PATH}/pay/${orderId}`)
-
-  return res.data
-}
-
-const applyCoupon = async (couponCode: ApplyCouponParams): Promise<ApplyCouponResponse> => {
-  const res = await orderApi.post<ApplyCouponResponse>(`/v2/api/${API_PATH}/coupon`, {
+export const apiApplyCoupon = (couponCode: string): Promise<AxiosResponse<ApplyCouponResponse>> =>
+  orderApi.post(`/v2/api/${API_PATH}/coupon`, {
     data: { code: couponCode },
   })
-
-  return res.data
-}
-
-export const apiCreateOrder = () =>
-  useMutation<CreateOrderResponse, Error, CreateOrderParams>({
-    mutationFn: (data) => createOrder(data),
-    onError: (err) => {
-      alert(err.message)
-    },
-  })
-
-export const apiProcessPayment = () =>
-  useMutation<ProcessPaymentResponse, Error, ProcessPaymentParams>({
-    mutationFn: (orderId) => processPayment(orderId),
-    onError: (err) => {
-      alert(err.message)
-    },
-  })
-
-export const apiApplyCoupon = () => {
-  const queryClient = useQueryClient()
-
-  return useMutation<ApplyCouponResponse, Error, ApplyCouponParams>({
-    mutationFn: (params) => applyCoupon(params),
-    onSuccess: (res) => {
-      queryClient.invalidateQueries({ queryKey: ['cart'] })
-      alert(res.message)
-    },
-    onError: (err) => {
-      alert(err.message)
-    },
-  })
-}

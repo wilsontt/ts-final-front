@@ -99,12 +99,21 @@ const handleDeleteCartItem = async (cartId: string) => {
 }
 
 const couponCode = ref('')
-const { mutate: applyCoupon, isPending: isApplyingCoupon } = apiApplyCoupon()
 
-const handleApplyCoupon = () => {
+const isApplyingCoupon = ref(false)
+
+const handleApplyCoupon = async () => {
   if (!couponCode.value.trim()) return
 
-  applyCoupon(couponCode.value)
+  try {
+    isApplyingCoupon.value = true
+
+    await apiApplyCoupon(couponCode.value)
+  } catch (error) {
+    alert('套用優惠券失敗，優惠券已過期或不存在')
+  } finally {
+    isApplyingCoupon.value = false
+  }
 }
 </script>
 
