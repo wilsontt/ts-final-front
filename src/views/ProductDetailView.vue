@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import 'swiper/css'
 
-import { computed, onMounted, ref } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
 import 'bootstrap/js/dist/carousel'
@@ -77,26 +77,32 @@ const recommendProducts = computed(() => {
 
 const swiperContainer = ref<HTMLElement | null>(null)
 
-onMounted(() => {
-  if (swiperContainer.value) {
-    const swiper = new Swiper(swiperContainer.value, {
-      modules: [Autoplay],
-      loop: true,
-      autoplay: {
-        delay: 2500,
-        disableOnInteraction: false,
-      },
-      slidesPerView: 2,
-      spaceBetween: 10,
-      breakpoints: {
-        767: {
-          slidesPerView: 3,
-          spaceBetween: 30,
-        },
-      },
-    })
-  }
-})
+watch(
+  () => recommendProducts.value,
+  async (newProducts) => {
+    if (newProducts.length > 0) {
+      await nextTick()
+      if (swiperContainer.value) {
+        new Swiper(swiperContainer.value, {
+          modules: [Autoplay],
+          loop: true,
+          autoplay: {
+            delay: 2500,
+            disableOnInteraction: false,
+          },
+          slidesPerView: 2,
+          spaceBetween: 10,
+          breakpoints: {
+            767: {
+              slidesPerView: 3,
+              spaceBetween: 30,
+            },
+          },
+        })
+      }
+    }
+  },
+)
 
 const handleAddCartItem = async () => {
   cartStore.addCartItem({

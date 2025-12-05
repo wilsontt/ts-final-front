@@ -12,7 +12,7 @@ import type { Product } from '@/types/product'
 import { storeToRefs } from 'pinia'
 import Swiper from 'swiper'
 import { Autoplay } from 'swiper/modules'
-import { onMounted, ref } from 'vue'
+import { nextTick, onMounted, ref, watch } from 'vue'
 
 const cartStore = useCartStore()
 
@@ -22,28 +22,36 @@ onMounted(() => {
   getProducts()
 })
 
+const products = ref<Product[]>([])
+
 const swiperContainer = ref<HTMLElement | null>(null)
 
-onMounted(() => {
-  if (swiperContainer.value) {
-    const swiper = new Swiper(swiperContainer.value, {
-      modules: [Autoplay],
-      loop: true,
-      autoplay: {
-        delay: 2500,
-        disableOnInteraction: false,
-      },
-      slidesPerView: 2,
-      spaceBetween: 10,
-      breakpoints: {
-        767: {
-          slidesPerView: 3,
-          spaceBetween: 30,
-        },
-      },
-    })
-  }
-})
+watch(
+  () => products.value,
+  async (newProducts) => {
+    if (newProducts.length > 0) {
+      await nextTick()
+      if (swiperContainer.value) {
+        new Swiper(swiperContainer.value, {
+          modules: [Autoplay],
+          loop: true,
+          autoplay: {
+            delay: 2500,
+            disableOnInteraction: false,
+          },
+          slidesPerView: 2,
+          spaceBetween: 10,
+          breakpoints: {
+            767: {
+              slidesPerView: 3,
+              spaceBetween: 30,
+            },
+          },
+        })
+      }
+    }
+  },
+)
 
 const getProducts = async () => {
   try {
@@ -53,8 +61,6 @@ const getProducts = async () => {
     alert('取得產品列表失敗')
   }
 }
-
-const products = ref<Product[]>([])
 
 type CartItem = CartInfo['carts'][number]
 
