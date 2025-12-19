@@ -1,4 +1,5 @@
 import { apiAddCartItem, apiDeleteCartItem, apiGetCart, apiUpdateCartItem } from '@/api/cart'
+import { apiApplyCoupon } from '@/api/order'
 import type { CartInfo } from '@/types/cart'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
@@ -10,8 +11,8 @@ export const useCartStore = defineStore('cart', () => {
     final_total: 0,
   })
 
-  const isUpdating = ref(false)
-  const isDeleting = ref(false)
+  const isUpdating = ref<boolean>(false)
+  const isDeleting = ref<boolean>(false)
 
   const getCart = async () => {
     try {
@@ -64,5 +65,23 @@ export const useCartStore = defineStore('cart', () => {
     }
   }
 
-  return { cart, isUpdating, isDeleting, getCart, addCartItem, updataCartItem, deleteCartItem }
+  const applyCoupon = async (couponCode: string) => {
+    try {
+      await apiApplyCoupon(couponCode)
+      await getCart()
+    } catch (error) {
+      alert('套用優惠券失敗，優惠券已過期或不存在')
+    }
+  }
+
+  return {
+    cart,
+    isUpdating,
+    isDeleting,
+    getCart,
+    addCartItem,
+    updataCartItem,
+    deleteCartItem,
+    applyCoupon,
+  }
 })

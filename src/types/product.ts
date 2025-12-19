@@ -10,7 +10,7 @@ export type Product = {
   origin_price: number
   price: number
   title: string
-  unit: string
+  unit: unknown
 }
 
 export type Pagination = {

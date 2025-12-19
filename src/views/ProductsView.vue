@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 
 import Footer from '@/components/Footer.vue'
 import Navbar from '@/components/Navbar.vue'
@@ -7,9 +7,10 @@ import Navbar from '@/components/Navbar.vue'
 import { apiGetAllProducts, apiGetProducts } from '@/api/products'
 import type { Pagination, Product } from '@/types/product'
 
-const currentPage = ref('1')
-const selectedCategory = ref('')
+const currentPage = ref<string>('1')
+const selectedCategory = ref<string>('')
 
+// 定義類型
 const products = ref<Product[]>([])
 const allProducts = ref<Product[]>([])
 
@@ -42,6 +43,18 @@ const getAllProducts = async () => {
     alert('取得所有產品列表失敗')
   }
 }
+
+watch(selectedCategory, () => {
+  if (currentPage.value === '1') {
+    getProducts()
+  } else {
+    currentPage.value = '1'
+  }
+})
+
+watch(currentPage, () => {
+  getProducts()
+})
 
 onMounted(() => {
   getProducts()

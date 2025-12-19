@@ -3,7 +3,8 @@ import type {
   GetProductDetailResponse,
   GetProductsResponse,
 } from '@/types/product'
-import axios, { type AxiosResponse } from 'axios'
+import type { AxiosResponse } from 'axios'
+import axios from 'axios'
 
 const BASE_URL = import.meta.env.VITE_BASE_URL
 const API_PATH = import.meta.env.VITE_API_PATH

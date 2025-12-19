@@ -42,9 +42,9 @@ export const apiAddCartItem = (params: {
   cartApi.post(`/v2/api/${API_PATH}/cart`, { data: params })
 
 export const apiUpdateCartItem = (params: {
+  id: string
   product_id: string
   qty: number
-  id: string
 }): Promise<AxiosResponse<UpdateCartItemResponse>> => {
   const { id: cartId, ...data } = params
 

@@ -4,7 +4,6 @@ import 'swiper/css'
 import Footer from '@/components/Footer.vue'
 import Navbar from '@/components/Navbar.vue'
 
-import { apiApplyCoupon } from '@/api/order'
 import { apiGetProducts } from '@/api/products'
 import { useCartStore } from '@/stores/cartStore'
 import type { CartInfo } from '@/types/cart'
@@ -22,8 +21,10 @@ onMounted(() => {
   getProducts()
 })
 
+// 定義型別
 const products = ref<Product[]>([])
 
+// HTML 類型 或 null
 const swiperContainer = ref<HTMLElement | null>(null)
 
 watch(
@@ -62,6 +63,7 @@ const getProducts = async () => {
   }
 }
 
+// 定義 CartInfo 中 carts[] 的類型
 type CartItem = CartInfo['carts'][number]
 
 const handleUpdateCartItem = async (type: 'plus' | 'minus', cartItem: CartItem) => {
@@ -83,7 +85,7 @@ const handleDeleteCartItem = async (cartId: string) => {
   cartStore.deleteCartItem(cartId)
 }
 
-const couponCode = ref('')
+const couponCode = ref<string>('')
 
 const isApplyingCoupon = ref(false)
 
@@ -93,9 +95,9 @@ const handleApplyCoupon = async () => {
   try {
     isApplyingCoupon.value = true
 
-    await apiApplyCoupon(couponCode.value)
+    await cartStore.applyCoupon(couponCode.value)
   } catch (error) {
-    alert('套用優惠券失敗，優惠券已過期或不存在')
+    // 錯誤處理已在 store 中完成
   } finally {
     isApplyingCoupon.value = false
   }

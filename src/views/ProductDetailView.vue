@@ -15,7 +15,7 @@ import { apiGetProductDetail, apiGetProducts } from '@/api/products'
 import { useCartStore } from '@/stores/cartStore'
 import type { Product } from '@/types/product'
 
-const productNum = ref(1)
+const productNum = ref<number>(1)
 
 const route = useRoute()
 
@@ -23,6 +23,7 @@ const cartStore = useCartStore()
 
 const productId = computed(() => route.params.id as string)
 
+// 定義型別
 const product = ref<Product>({
   category: '',
   content: '',
@@ -54,6 +55,12 @@ onMounted(() => {
   getProducts()
 })
 
+watch(productId, () => {
+  getProductDetail()
+  // 也重新撈取一次推薦列表，因為推薦是基於當前產品分類
+  getProducts()
+})
+
 const recommendCategory = computed(() => {
   if (!product.value) return ''
 
@@ -75,31 +82,41 @@ const recommendProducts = computed(() => {
   return recommend.value.filter((product) => product.id !== route.params.id)
 })
 
+// HTML 類型 或 null
 const swiperContainer = ref<HTMLElement | null>(null)
+
+const swiperInstance = ref<Swiper | null>(null)
 
 watch(
   () => recommendProducts.value,
   async (newProducts) => {
-    if (newProducts.length > 0) {
-      await nextTick()
-      if (swiperContainer.value) {
-        new Swiper(swiperContainer.value, {
-          modules: [Autoplay],
-          loop: true,
-          autoplay: {
-            delay: 2500,
-            disableOnInteraction: false,
+    if (newProducts.length === 0) return
+
+    await nextTick() // 保證 swiper DOM 已渲染
+
+    // 如果已有實例，先銷毀
+    if (swiperInstance.value) {
+      swiperInstance.value.destroy(true, true)
+      swiperInstance.value = null
+    }
+
+    if (swiperContainer.value) {
+      swiperInstance.value = new Swiper(swiperContainer.value, {
+        modules: [Autoplay],
+        loop: true,
+        autoplay: {
+          delay: 2500,
+          disableOnInteraction: false,
+        },
+        slidesPerView: 2,
+        spaceBetween: 10,
+        breakpoints: {
+          767: {
+            slidesPerView: 3,
+            spaceBetween: 30,
           },
-          slidesPerView: 2,
-          spaceBetween: 10,
-          breakpoints: {
-            767: {
-              slidesPerView: 3,
-              spaceBetween: 30,
-            },
-          },
-        })
-      }
+        },
+      })
     }
   },
 )
@@ -132,7 +149,7 @@ const handleAddCartItem = async () => {
               <img :src="product?.imageUrl" class="d-block w-100" alt="主圖" />
             </div>
             <div
-              v-for="image in product?.imagesUrl.filter(Boolean)"
+              v-for="image in product?.imagesUrl?.filter((i) => i !== product?.imageUrl)"
               :key="image"
               class="carousel-item"
             >

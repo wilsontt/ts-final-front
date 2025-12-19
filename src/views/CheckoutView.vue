@@ -9,6 +9,7 @@ import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
+// 定義只有 1 或 2
 const step = ref<1 | 2>(1)
 
 const cartStore = useCartStore()
@@ -25,16 +26,17 @@ const form = ref({
   message: '',
 })
 
+// 定義 HTML按鈕 或 null
 const submitBtn = ref<HTMLButtonElement | null>(null)
 
-const isSubmitted = ref(false)
+const isSubmitted = ref<boolean>(false)
 
 const submitForm = () => {
   isSubmitted.value = true
   submitBtn.value?.click()
 }
 
-const isSubmitting = ref(false)
+const isSubmitting = ref<boolean>(false)
 
 const handleSubmit = async () => {
   try {
@@ -83,7 +85,7 @@ const handleNextStep = () => {
   submitForm()
 }
 
-const isProcessingPayment = ref(false)
+const isProcessingPayment = ref<boolean>(false)
 
 const handleProcessPayment = async () => {
   if (!orderId.value) return
