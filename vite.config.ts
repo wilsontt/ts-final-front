@@ -6,7 +6,7 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/2025-ts-task-2/',
+  base: '/ts-final-front/',
   plugins: [vue(), vueDevTools()],
   resolve: {
     alias: {
